@@ -1,14 +1,13 @@
 import asyncio
 import config
 from aiogram import Bot, Dispatcher
-from handlers import key_handlers, command_handlers
+from routers.tg_save_link import router as bot_router
 
 
 async def main():
     bot = Bot(config.token)
     dp = Dispatcher()
-    dp.include_router(key_handlers.router)
-    dp.include_router(command_handlers.router)
+    dp.include_router(bot_router)
 
     await dp.start_polling(bot)
 
