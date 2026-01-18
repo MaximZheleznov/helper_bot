@@ -14,8 +14,8 @@ import lexicon
 router = Router()
 
 
-router.message.filter(F.message_thread_id == config.theme_id)
-router.callback_query.filter(F.message.message_thread_id == config.theme_id)
+router.message.filter(F.message_thread_id.in_(config.theme_ids))
+router.callback_query.filter(F.message.message_thread_id.in_(config.theme_ids))
 
 
 @router.message(Command("start"))
