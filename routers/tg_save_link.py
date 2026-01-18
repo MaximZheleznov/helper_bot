@@ -15,7 +15,7 @@ router = Router()
 
 
 router.message.filter(F.message_thread_id == config.theme_id)
-router.callback_query.filter(F.message.message_thread_id == config.theme_id)
+git router.callback_query.filter(F.message.message_thread_id == config.theme_id)
 
 
 @router.message(Command("start"))
@@ -59,6 +59,25 @@ async def fetch_bot_data_final(message: Message):
             for k in data[key]:
                 response += f"{k}\n"
         await message.answer(f"{f'Список кейсов для КП за: {shift} {date}' if response else 'На текущий момент, список пуст😦'}\n\n{response}")
+
+
+@router.message(Command('group_delete'))
+async def group_delete_handler(message: Message, state: FSMContext):
+    if message.from_user.id in config.admin_users:
+        await message.answer("Пришлите список кейсов для удаления")
+        await state.set_state(CaseStates.waiting_for_deletion_list)
+
+
+@router.message(CaseStates.waiting_for_deletion_list)
+async def remove_group(message: Message, state: FSMContext):
+    if message.from_user.id in config.admin_users:
+        case_links = message.text.split()
+        response = ''
+        for link in case_links:
+            response += f"\n{link}: {database.bot_data.data.remove_data(link)}"
+        await message.answer(response)
+        await state.set_state(CaseStates.waiting_for_link)
+        database.bot_data.data.save_data()
 
 
 @router.message(Command('clean_data'))
