@@ -15,7 +15,7 @@ router = Router()
 
 
 router.message.filter(F.message_thread_id == config.theme_id)
-git router.callback_query.filter(F.message.message_thread_id == config.theme_id)
+router.callback_query.filter(F.message.message_thread_id == config.theme_id)
 
 
 @router.message(Command("start"))
