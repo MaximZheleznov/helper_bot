@@ -5,8 +5,8 @@ from aiogram.filters import Command
 from datetime import datetime, timedelta
 import config
 from case_states.case_states import CaseStates
-from keyboard.keyboards import categories_kb, skip_description_kb, actions_kb
-from callbacks.save_link import CategoryCB, SkipDescriptionCB, MakeDesiredActionCB
+from keyboard.keyboards import categories_kb, actions_kb
+from callbacks.save_link import CategoryCB, MakeDesiredActionCB
 import database.bot_data
 import lexicon
 
@@ -73,16 +73,19 @@ async def echo_chat_id(message: Message):
     await message.answer(str(message.message_thread_id))
 
 
-@router.message(CaseStates.waiting_for_link, F.text.contains("t.me"))
+@router.message(CaseStates.waiting_for_link, F.text.startswith("https://t.me"))
 async def receive_link(message: Message, state: FSMContext):
-    link = message.text
+    link = message.text.split(maxsplit=1)[0]
+    description = ''
+    if len(message.text.split(maxsplit=1)) > 1:
+        description = message.text.split(maxsplit=1)[1]
     if database.bot_data.data.is_in_dict(link):
         response = f"{database.bot_data.data.data[link][0]} {database.bot_data.data.data[link][1]}"
         await message.answer(f"Такая ссылка уже сохранена:\n{link} {response}\n\nХотите внести изменения в кейс?", reply_markup=actions_kb(lexicon.main_menu_keys))
         await state.set_state(CaseStates.waiting_for_action)
-        await state.update_data(link=link)
+        await state.update_data(link=link, description=description)
         return
-    await state.update_data(link=link)
+    await state.update_data(link=link, description=description)
     await message.answer("Выбери категорию", reply_markup=categories_kb(lexicon.cases_keys))
     await state.set_state(CaseStates.waiting_for_category)
 
@@ -105,58 +108,24 @@ async def choose_action(callback: CallbackQuery, callback_data: MakeDesiredActio
 @router.callback_query(CaseStates.waiting_for_new_category, CategoryCB.filter())
 async def set_new_category(callback: CallbackQuery, callback_data: CategoryCB, state: FSMContext):
     await state.update_data(category=callback_data.category)
-    await callback.message.edit_text("Введите обновленное описание или нажмите «Без описания»", reply_markup=skip_description_kb())
-    await state.set_state(CaseStates.waiting_for_new_description)
+    data = await state.get_data()
+    link = data["link"]
+    category = data["category"]
+    description = data["description"]
+    await callback.message.edit_text(database.bot_data.data.change_data([link, category, description]))
+    await state.set_state(CaseStates.waiting_for_link)
     await callback.answer()
+    database.bot_data.data.save_data()
 
 
 @router.callback_query(CaseStates.waiting_for_category, CategoryCB.filter())
 async def choose_category(callback: CallbackQuery, callback_data: CategoryCB, state: FSMContext):
     await state.update_data(category=callback_data.category)
-
-    await callback.message.edit_text("Введи описание или нажми «Без описания»", reply_markup=skip_description_kb())
-
-    await state.set_state(CaseStates.waiting_for_description)
+    data = await state.get_data()
+    link = data["link"]
+    category = data["category"]
+    description = data["description"]
+    await callback.message.edit_text(database.bot_data.data.add_data([link, category, description]))
+    await state.set_state(CaseStates.waiting_for_link)
     await callback.answer()
-
-
-@router.message(CaseStates.waiting_for_description)
-async def description_text(message: Message, state: FSMContext):
-    data = await state.get_data()
-    link = data["link"]
-    category = data["category"]
-    await message.answer(text=database.bot_data.data.add_data([link, category, message.text]))
-    await state.set_state(CaseStates.waiting_for_link)
-    database.bot_data.data.save_data()
-
-
-@router.callback_query(CaseStates.waiting_for_description, SkipDescriptionCB.filter(F.action == "skip"))
-async def description_skip(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    link = data["link"]
-    category = data["category"]
-    await callback.message.edit_text(text=database.bot_data.data.add_data([link, category, '']))
-    await callback.answer()
-    await state.set_state(CaseStates.waiting_for_link)
-    database.bot_data.data.save_data()
-
-
-@router.message(CaseStates.waiting_for_new_description)
-async def description_text(message: Message, state: FSMContext):
-    data = await state.get_data()
-    link = data["link"]
-    category = data["category"]
-    await message.answer(text=database.bot_data.data.change_data([link, category, message.text]))
-    await state.set_state(CaseStates.waiting_for_link)
-    database.bot_data.data.save_data()
-
-
-@router.callback_query(CaseStates.waiting_for_new_description, SkipDescriptionCB.filter(F.action == "skip"))
-async def description_skip(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    link = data["link"]
-    category = data["category"]
-    await callback.message.edit_text(text=database.bot_data.data.change_data([link, category, None]))
-    await callback.answer()
-    await state.set_state(CaseStates.waiting_for_link)
     database.bot_data.data.save_data()
