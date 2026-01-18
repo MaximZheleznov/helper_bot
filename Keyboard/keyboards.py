@@ -1,4 +1,3 @@
-
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from callbacks.save_link import CategoryCB, SkipDescriptionCB, MakeDesiredActionCB
 

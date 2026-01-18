@@ -8,5 +8,3 @@ class CaseStates(StatesGroup):
     waiting_for_action = State()
     waiting_for_new_category = State()
     waiting_for_new_description = State()
-
-
