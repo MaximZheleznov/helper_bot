@@ -28,10 +28,12 @@ async def start_save(message: Message, state: FSMContext):
 async def fetch_bot_data(message: Message):
     data = database.bot_data.data.fetch_data()
     response = ''
+    i = 1
     for key in data.keys():
         response += f"{key}\n"
         for k in data[key]:
-            response += f"{k}\n"
+            response += f"{i}. {k}\n"
+            i += 1
         response += "\n"
     await message.answer(f"{'Вот текущий список кейсов:' if response else 'На текущий момент, список пуст😦'}\n\n{response}")
 
