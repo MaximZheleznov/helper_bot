@@ -124,6 +124,7 @@ async def choose_action(callback: CallbackQuery, callback_data: MakeDesiredActio
     elif action == "Назад":
         await callback.message.edit_text("Вернулись в главное меню.\nОжидаю ссылку для продолжения работы.")
         await state.set_state(CaseStates.waiting_for_link)
+    await callback.answer()
 
 
 @router.callback_query(CaseStates.waiting_for_new_category, CategoryCB.filter())
