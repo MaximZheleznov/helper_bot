@@ -24,23 +24,23 @@ class Cases:
             return f"{input_data[0]} {self.data[input_data[0]]}"
         self.data[input_data[0]] = [input_data[1], input_data[2]]
         print(self.data)
-        return "Новый кейс добавлен!"
+        return f"Добавлен новый кейс:\n{input_data[0]} {input_data[1]}"
 
     def remove_data(self, case_link: str):
         if case_link in self.data.keys():
             del self.data[case_link]
-            return "Кейс успешно удалён!"
-        return "Такой кейс не найден!"
+            return f"{case_link} - кейс успешно удалён!"
+        return f"{case_link} - кейс не найден!"
 
     def change_data(self, new_data):
         if new_data[0] not in self.data.keys():
-            return "Такой кейс не найден!"
+            return f"{new_data[0]} - кейс не найден!"
         if not new_data[2]:
             self.data[new_data[0]][0] = new_data[1]
             print(self.data)
         else:
             self.data[new_data[0]] = [new_data[1], new_data[2]]
-        return "Категория успешно обновлена!"
+        return f"{new_data[0]} - категория для кейса успешно обновлена на \"{new_data[1]}\"."
 
     def fetch_data(self) -> dict:
         final_data = dict()
