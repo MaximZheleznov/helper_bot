@@ -14,8 +14,8 @@ import lexicon
 router = Router()
 
 
-router.message.filter(F.message_thread_id.in_(config.theme_ids))
-router.callback_query.filter(F.message.message_thread_id.in_(config.theme_ids))
+router.message.filter(F.message_thread_id == config.theme_ids[config.current_shift][0], F.chat.id == config.theme_ids[config.current_shift][1])
+router.callback_query.filter(F.message.message_thread_id == config.theme_ids[config.current_shift][0], F.message.chat.id == config.theme_ids[config.current_shift][1])
 
 
 @router.message(Command('fetch_data'))
@@ -90,7 +90,7 @@ async def clean_bot_data(message: Message):
 
 @router.message(Command('echo_chat_id'))
 async def echo_chat_id(message: Message):
-    await message.answer(str(message.message_thread_id))
+    await message.answer(f"ID темы: {message.message_thread_id}\n ID чата: {message.chat.id}")
 
 
 @router.message(F.text.startswith("https://t.me"))
@@ -109,7 +109,6 @@ async def receive_link(message: Message, state: FSMContext):
     await state.update_data(link=link, description=description)
     await message.answer("Выбери категорию", reply_markup=categories_kb(lexicon.cases_keys))
     await state.set_state(CaseStates.waiting_for_category)
-
 
 
 @router.callback_query(CaseStates.waiting_for_action, MakeDesiredActionCB.filter())
