@@ -8,13 +8,13 @@ def get_current_working_shift():
     current_time = now.time()
     current_date = now.date()
 
-    if current_time < datetime.strptime("04:00", "%H:%M").time():
+    if current_time < datetime.strptime("04:30", "%H:%M").time():
         target_date = current_date - timedelta(days=1)
         period = "Ночь"
-    elif current_time < datetime.strptime("11:00", "%H:%M").time():
+    elif current_time < datetime.strptime("11:30", "%H:%M").time():
         target_date = current_date
         period = "Утро"
-    elif current_time < datetime.strptime("18:00", "%H:%M").time():
+    elif current_time < datetime.strptime("18:30", "%H:%M").time():
         target_date = current_date
         period = "День"
     else:
