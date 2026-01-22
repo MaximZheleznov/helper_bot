@@ -22,13 +22,16 @@ def get_current_working_shift():
         period = "Ночь"
 
     days_passed = (target_date - anchor_date).days
+    print(days_passed)
     cycle_day = days_passed % 5
+    print(cycle_day)
+    shift_numbers = [5, 4, 3, 2, 1]
 
     if period == "Утро":
-        shift_number = (1 - cycle_day) % 5
+        shift_number = shift_numbers[cycle_day % 5 - 1]
     elif period == "День":
-        shift_number = (2 - cycle_day) % 5
+        shift_number = shift_numbers[cycle_day % 5 - 2]
     else:
-        shift_number = (3 - cycle_day) % 5
+        shift_number = shift_numbers[cycle_day % 5 - 3]
 
     return [int(shift_number), period, current_date.strftime("%d.%m.%y")]
