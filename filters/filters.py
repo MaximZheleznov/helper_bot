@@ -1,6 +1,5 @@
 from aiogram.filters import BaseFilter
 from aiogram.types import Message, CallbackQuery
-import config
 
 
 class ChatThreadFilter(BaseFilter):
@@ -18,6 +17,8 @@ class ChatThreadFilter(BaseFilter):
 
         chat_id = message.chat.id
         thread_id = message.message_thread_id
+        if not thread_id:
+            thread_id = ""
         if str(chat_id) not in self.allowed.keys():
             return False
         return self.allowed[str(chat_id)] == thread_id

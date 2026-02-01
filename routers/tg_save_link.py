@@ -2,14 +2,14 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
-import config
 from case_states.case_states import CaseStates
 from keyboard.keyboards import categories_kb, actions_kb
 from callbacks.save_link import CategoryCB, MakeDesiredActionCB
-import database.bot_data
-import lexicon
 from shifts.shifts import get_current_working_shift
 from filters.filters import ChatThreadFilter, UserFilter
+import database.bot_data
+import config
+import lexicon
 
 
 router = Router()
@@ -38,12 +38,14 @@ async def fetch_bot_data(message: Message):
 async def fetch_bot_data_final(message: Message):
     await message.delete()
     data = database.bot_data.data.fetch_data_final(chat_id=str(message.chat.id))
+    shift = get_current_working_shift()
     response = ''
     for key in data.keys():
         response += f"{key}\n"
         for k in data[key]:
             response += f"{k}\n"
-    await message.answer(f"{f'Список кейсов для КП за: {get_current_working_shift()[1]} {get_current_working_shift()[2]}' if response else 'На текущий момент, список пуст😦'}\n\n{response}")
+        response += "\n"
+    await message.answer(f"{f'Список кейсов для КП за: {shift[1]} {shift[2]}' if response else 'На текущий момент, список пуст😦'}\n\n{response}")
 
 
 @router.message(Command('group_delete'), UserFilter(config.admin_users))
@@ -91,7 +93,7 @@ async def receive_link(message: Message, state: FSMContext):
         await state.update_data(link=link, description=description)
         return
     await state.update_data(link=link, description=description)
-    await message.answer("Выбери категорию", reply_markup=categories_kb(lexicon.cases_keys))
+    await message.answer("Выберите категорию", reply_markup=categories_kb(lexicon.cases_keys))
     await state.set_state(CaseStates.waiting_for_category)
 
 
