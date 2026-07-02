@@ -13,10 +13,15 @@ import lexicon
 
 
 router = Router()
-
+maintenance_router = Router()
 
 router.message.filter(ChatThreadFilter(config.theme_ids))
 router.callback_query.filter(ChatThreadFilter(config.theme_ids))
+
+
+@maintenance_router.message(Command('echo_chat_id'))
+async def echo_chat_id(message: Message):
+    await message.answer(f"ID темы: {message.message_thread_id}\n ID чата: {message.chat.id}")
 
 
 @router.message(Command('fetch_data'))
